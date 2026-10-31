@@ -1,0 +1,45 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout
+  title="Skill — Pegg Skill Hub"
+  description="Browse and install skills for your AI agent."
+>
+  <div class="container detail">
+    <div id="detail-root" aria-busy="true">
+      <div class="detail-head" aria-hidden="true">
+        <div class="sk" style="width: 62px; height: 62px; border-radius: 14px">
+        </div>
+        <div style="flex: 1">
+          <div class="sk" style="width: 160px; height: 12px"></div>
+          <div
+            class="sk"
+            style="width: min(420px, 72%); height: 40px; margin-top: 12px"
+          >
+          </div>
+          <div class="sk" style="width: 190px; height: 12px; margin-top: 12px">
+          </div>
+        </div>
+      </div>
+
+      <div
+        class="sk"
+        style="height: 68px; margin-top: 32px; border-radius: 14px"
+        aria-hidden="true"
+      >
+      </div>
+
+      <div class="detail-layout" aria-hidden="true">
+        <div class="sk" style="height: 440px; border-radius: 16px"></div>
+        <div class="sk" style="height: 280px; border-radius: 16px"></div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { initSkillDetail } from "../../scripts/detail";
+
+  initSkillDetail();
+</script>

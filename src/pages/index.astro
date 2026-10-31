@@ -1,0 +1,135 @@
+---
+import Layout from "../layouts/Layout.astro";
+import PeggForever from "../components/PeggForever.astro";
+---
+
+<Layout>
+  <section class="hero">
+    <PeggForever />
+    <div class="container">
+      <p class="hero-eyebrow">Skill directory</p>
+      <h1>The Skill Hub</h1>
+      <p class="hero-sub">
+        Empower your AI agent with custom capabilities, integrations, and tools.
+        Search the directory, copy the command, and ship.
+      </p>
+      <p class="hero-stats" id="hero-stats" hidden>
+        <span><strong data-stat-total>—</strong> skills</span>
+        <span class="sep">/</span>
+        <span><strong data-stat-sources>—</strong> sources</span>
+      </p>
+    </div>
+  </section>
+
+  <div class="container">
+    <section aria-label="Skill filters">
+      <div class="toolbar">
+        <div class="search">
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-3.5-3.5"></path>
+          </svg>
+          <input
+            id="skill-search"
+            type="search"
+            placeholder="Search skills..."
+            aria-label="Search skills"
+            autocomplete="off"
+            autocapitalize="off"
+            spellcheck="false"
+            enterkeyhint="search"
+          />
+          <kbd class="search-kbd" aria-hidden="true">/</kbd>
+        </div>
+
+        <div
+          class="segmented"
+          role="group"
+          aria-label="Filter by official status"
+        >
+          <button
+            class="seg"
+            type="button"
+            data-official="all"
+            aria-pressed="true"
+          >
+            All
+          </button>
+          <button
+            class="seg"
+            type="button"
+            data-official="true"
+            aria-pressed="false"
+          >
+            Official
+          </button>
+          <button
+            class="seg"
+            type="button"
+            data-official="false"
+            aria-pressed="false"
+          >
+            Community
+          </button>
+        </div>
+      </div>
+
+      <div class="results-line">
+        <p class="results-count" id="results-count" aria-live="polite">
+          Loading skills…
+        </p>
+        <button class="clear-filters" id="clear-filters" type="button" hidden>
+          Clear filters
+        </button>
+      </div>
+    </section>
+
+    <div class="skill-grid" id="skill-grid" aria-busy="true">
+      {
+        Array.from({ length: 6 }).map(() => (
+          <div class="skeleton-card" aria-hidden="true">
+            <div class="sk sk-mark" />
+            <div class="sk sk-title" />
+            <div class="sk sk-line" />
+            <div class="sk sk-foot" />
+          </div>
+        ))
+      }
+    </div>
+
+    <div class="load-wrap">
+      <button class="btn btn-outline" id="load-more" type="button" hidden>
+        Load more
+      </button>
+    </div>
+
+    <noscript>
+      <div class="empty" style="margin-top: 24px">
+        <div class="empty-mark">∞</div>
+        <h2>JavaScript is required</h2>
+        <p>
+          The skill directory is loaded from the open
+          <a href="https://hub-api.pegg.dev/v1">Skills API</a>. Enable
+          JavaScript to browse it, or query the API directly.
+        </p>
+        <a class="btn btn-outline" href="https://hub-api.pegg.dev/v1/skills">
+          Open the API
+        </a>
+      </div>
+    </noscript>
+  </div>
+</Layout>
+
+<script>
+  import { initHub } from "../scripts/hub";
+
+  initHub();
+</script>

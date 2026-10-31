@@ -1,0 +1,237 @@
+---
+
+---
+
+<div class="pegg-forever" aria-hidden="true">
+  <pre data-pegg-forever></pre>
+</div>
+
+<script>
+  const screen = document.querySelector<HTMLPreElement>("[data-pegg-forever]");
+
+  if (screen) {
+    const W = 86;
+    const H = 40;
+    const ramp = ".,-~:;=!*#$@";
+    const TAU = Math.PI * 2;
+    const normalize = (v: number[]) => {
+      const m = Math.hypot(...v);
+      return v.map((x) => x / m);
+    };
+
+    function rotate(
+      x: number,
+      y: number,
+      z: number,
+      ax: number,
+      ay: number,
+      az: number,
+    ) {
+      let c = Math.cos(ax);
+      let s = Math.sin(ax);
+      let ny = y * c - z * s;
+      let nz = y * s + z * c;
+      y = ny;
+      z = nz;
+      c = Math.cos(ay);
+      s = Math.sin(ay);
+      let nx = x * c + z * s;
+      nz = -x * s + z * c;
+      x = nx;
+      z = nz;
+      c = Math.cos(az);
+      s = Math.sin(az);
+      nx = x * c - y * s;
+      ny = x * s + y * c;
+      return [nx, ny, z];
+    }
+
+    function center(t: number) {
+      return [2.35 * Math.sin(t), 1.23 * Math.sin(t) * Math.cos(t), 0];
+    }
+
+    function tangent(t: number) {
+      return normalize([2.35 * Math.cos(t), 1.23 * Math.cos(2 * t), 0]);
+    }
+
+    function frame(t: number) {
+      const T = tangent(t);
+      const N = normalize([-T[1], T[0], 0]);
+      return [N, [0, 0, 1]];
+    }
+
+    function render(time: number) {
+      const pixels = Array<string>(W * H).fill(" ");
+      const depth = new Float64Array(W * H).fill(-Infinity);
+
+      const ax = 0.15 + Math.sin(time * 0.0004) * 0.05;
+      const ay = Math.sin(time * 0.00035) * 0.12;
+      const az = Math.cos(time * 0.0003) * 0.02;
+      const radius = 0.32;
+
+      for (let i = 0; i < 380; i++) {
+        const t = (TAU * i) / 380;
+        const C = center(t);
+        const [N, B] = frame(t);
+
+        for (let j = 0; j < 30; j++) {
+          const u = (TAU * j) / 30;
+          const cu = Math.cos(u);
+          const su = Math.sin(u);
+          const p = [
+            C[0] + radius * (N[0] * cu + B[0] * su),
+            C[1] + radius * (N[1] * cu + B[1] * su),
+            C[2] + radius * (N[2] * cu + B[2] * su),
+          ];
+          const normal = [
+            N[0] * cu + B[0] * su,
+            N[1] * cu + B[1] * su,
+            N[2] * cu + B[2] * su,
+          ];
+
+          const [x, y, z] = rotate(p[0], p[1], p[2], ax, ay, az);
+          const [nx, ny, nz] = rotate(
+            normal[0],
+            normal[1],
+            normal[2],
+            ax,
+            ay,
+            az,
+          );
+
+          const invZ = 1 / (6.8 - z);
+          const sx = Math.floor(W / 2 + x * 88 * invZ);
+          const sy = Math.floor(H / 2 - y * 45 * invZ);
+
+          if (sx < 0 || sx >= W || sy < 0 || sy >= H) continue;
+
+          const k = sy * W + sx;
+          if (invZ <= depth[k]) continue;
+
+          depth[k] = invZ;
+
+          const diffuse = Math.max(0, nx * 0.35 + ny * -0.55 + nz * 0.76);
+          const baseBrightness = Math.min(1, 0.12 + diffuse * 0.58);
+          const phase = t - time * 0.00115;
+          const wave = Math.pow((Math.cos(phase) + 1) * 0.5, 5);
+          const brightness = Math.min(1, baseBrightness + wave * 0.38);
+
+          pixels[k] =
+            ramp[
+              Math.min(
+                ramp.length - 1,
+                Math.floor(brightness * (ramp.length - 1)),
+              )
+            ];
+        }
+      }
+
+      let output = "";
+
+      for (let y = 0; y < H; y++) {
+        output +=
+          pixels.slice(y * W, (y + 1) * W).join("") + (y < H - 1 ? "\n" : "");
+      }
+
+      if (screen) screen.textContent = output;
+    }
+
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const startedAt = performance.now();
+    let animationFrameId = 0;
+
+    function tick(now: number) {
+      render(now - startedAt);
+      animationFrameId = requestAnimationFrame(tick);
+    }
+
+    const mobile = window.matchMedia("(max-width: 720px)");
+    let running = false;
+
+    function start() {
+      if (running || mobile.matches || document.hidden) return;
+
+      running = true;
+
+      if (reduceMotion) {
+        render(0);
+        return;
+      }
+
+      animationFrameId = requestAnimationFrame(tick);
+    }
+
+    function stop() {
+      running = false;
+      cancelAnimationFrame(animationFrameId);
+    }
+
+    start();
+
+    mobile.addEventListener("change", () => {
+      if (mobile.matches) stop();
+      else start();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stop();
+      else start();
+    });
+  }
+</script>
+
+<style>
+  .pegg-forever {
+    position: absolute;
+    top: -70px;
+    right: -90px;
+    z-index: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    width: min(720px, 58vw);
+    height: 560px;
+    overflow: hidden;
+    opacity: var(--ascii-opacity);
+    pointer-events: none;
+    -webkit-mask-image: radial-gradient(
+      ellipse 62% 58% at 58% 46%,
+      #000 22%,
+      transparent 78%
+    );
+    mask-image: radial-gradient(
+      ellipse 62% 58% at 58% 46%,
+      #000 22%,
+      transparent 78%
+    );
+  }
+
+  .pegg-forever pre {
+    margin: 0;
+    color: var(--fg);
+    font-family: var(--mono);
+    font-size: clamp(8px, 1.05vw, 13px);
+    line-height: 1;
+    letter-spacing: 0;
+    white-space: pre;
+    user-select: none;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--fg) 26%, transparent);
+  }
+
+  @media (max-width: 900px) {
+    .pegg-forever {
+      top: -30px;
+      right: -120px;
+      width: 58vw;
+      height: 440px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .pegg-forever {
+      display: none;
+    }
+  }
+</style>

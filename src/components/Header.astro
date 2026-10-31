@@ -1,0 +1,108 @@
+---
+const NAV = [
+  { label: "Home", href: "https://pegg.dev" },
+  { label: "Docs", href: "https://docs.pegg.dev" },
+];
+---
+
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="header-left">
+      <a class="brand" href="/" aria-label="Pegg Skill Hub home">
+        <img
+          class="logo-dark"
+          src="https://cdn.pegg.dev/logo/dark-logo.png"
+          alt="Pegg"
+          width="128px"
+          loading="eager"
+          decoding="async"
+        />
+        <img
+          class="logo-light"
+          src="https://cdn.pegg.dev/logo/light-logo.png"
+          alt="Pegg"
+          width="128"
+          loading="eager"
+          decoding="async"
+        />
+      </a>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        {
+          NAV.map((item) => (
+            <a href={item.href} rel="noopener">
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+
+    <div class="header-right">
+      <button
+        class="theme-toggle"
+        id="theme-toggle"
+        type="button"
+        aria-label="Toggle dark mode"
+        title="Toggle theme"
+      >
+        <svg
+          class="icon-sun"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="4"></circle>
+          <path
+            d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.65 17.65l1.42 1.42M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.65 6.35l1.42-1.42"
+          ></path>
+        </svg>
+        <svg
+          class="icon-moon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a7 7 0 0 0 10.7 10.7Z"
+          ></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const toggle = document.getElementById("theme-toggle");
+  const root = document.documentElement;
+  const meta = document.getElementById("theme-color");
+
+  const sync = () => {
+    const dark = root.classList.contains("dark");
+    root.style.colorScheme = dark ? "dark" : "light";
+    if (meta) meta.setAttribute("content", dark ? "#070707" : "#ffffff");
+    toggle?.setAttribute(
+      "aria-label",
+      dark ? "Switch to light mode" : "Switch to dark mode",
+    );
+  };
+
+  toggle?.addEventListener("click", () => {
+    const dark = !root.classList.contains("dark");
+    root.classList.toggle("dark", dark);
+    try {
+      localStorage.setItem("pegg-theme", dark ? "dark" : "light");
+    } catch {
+      // storage can be unavailable in private mode
+    }
+    sync();
+  });
+
+  sync();
+</script>
